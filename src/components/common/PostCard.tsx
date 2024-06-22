@@ -38,7 +38,7 @@ export default function PostCard({
   };
 
   return (
-    <div className="mb-5">
+    <div className="mb-3 border-gray-900 border-8 shadow-xl rounded-2xl p-5">
       <PostUserBar post={post} isAuthPost={isAuthPost} />
       <div className="ml-12 mt-[-10px]">
         <Link href={noRedirect == true ? "#" : `/post/${post.id}`}>

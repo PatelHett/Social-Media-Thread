@@ -15,31 +15,36 @@ export async function GET(request: NextRequest) {
   if (!session) {
     return NextResponse.json({ status: 401, message: "Un-Authorized" });
   }
-  const posts = await prisma.post.findMany({
-    include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
+  try {
+    const posts = await prisma.post.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            username: true,
+          },
+        },
+        Likes: {
+          take: 1,
+          where: {
+            user_id: Number(session?.user?.id),
+          },
         },
       },
-      Likes: {
-        take: 1,
-        where: {
-          user_id: Number(session?.user?.id),
-        },
+      orderBy: {
+        id: "desc",
       },
-    },
-    orderBy: {
-      id: "desc",
-    },
-  });
+    });
 
-  return NextResponse.json({
-    status: 200,
-    data: posts,
-  });
+    return NextResponse.json({
+      status: 200,
+      data: posts,
+    });
+  } catch (error) {
+    console.error("GET /posts error:", error);
+    return NextResponse.json({ status: 500, message: "Internal Server Error" });
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -48,17 +53,19 @@ export async function POST(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ status: 401, message: "Un-Authorized" });
     }
+
     const formData = await request.formData();
     const data = {
       content: formData.get("content"),
       image: "",
     };
+
     vine.errorReporter = () => new CustomErrorReporter();
     const validator = vine.compile(postSchema);
     const payload = await validator.validate(data);
 
-    const image = formData.get("image") as Blob | null;
-    // * IF image exist
+    const image = formData.get("image") as File | null;
+
     if (image) {
       const isImageNotValid = imagevalidator(image?.name, image?.size);
       if (isImageNotValid) {
@@ -70,9 +77,8 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // * Upload image if all good
       try {
-        const buffer = Buffer.from(await image!.arrayBuffer());
+        const buffer = Buffer.from(await image.arrayBuffer());
         const uploadDir = join(process.cwd(), "public", "/uploads");
         const uniqueNmae = Date.now() + "_" + getRandomNumber(1, 999999);
         const imgExt = image?.name.split(".");
@@ -80,14 +86,14 @@ export async function POST(request: NextRequest) {
         await writeFile(`${uploadDir}/${filename}`, buffer);
         data.image = filename;
       } catch (error) {
+        console.error("Image upload error:", error);
         return NextResponse.json({
           status: 500,
-          message: "Something went wrong.Please try again later.",
+          message: "Something went wrong while uploading the image. Please try again later.",
         });
       }
     }
 
-    // * create post in DB
     await prisma.post.create({
       data: {
         content: payload.content,
@@ -101,11 +107,16 @@ export async function POST(request: NextRequest) {
       message: "Post created successfully!",
     });
   } catch (error) {
+    console.error("POST /posts error:", error);
     if (error instanceof errors.E_VALIDATION_ERROR) {
       return NextResponse.json(
         { status: 400, errors: error.messages },
         { status: 200 }
       );
     }
+    return NextResponse.json({
+      status: 500,
+      message: "Internal Server Error",
+    });
   }
 }
