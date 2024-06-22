@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -11,16 +11,16 @@ import { signIn } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
-export default function Login() {
+function Login() {
   const params = useSearchParams();
   const router = useRouter();
   const { status } = useSession();
-  const [authState, setAuthState] = useState<AuthStateType>({
+  const [authState, setAuthState] = useState({
     email: "",
     password: "",
   });
-  const [errors, setErrors] = useState<AuthErrorType>({});
-  const [loading, setLoading] = useState<boolean>(false);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (status == "authenticated") {
@@ -28,7 +28,7 @@ export default function Login() {
     }
   }, [router, status]);
 
-  const login = (event: React.FormEvent) => {
+  const login = (event: any) => {
     event.preventDefault();
     setLoading(true);
     axios
@@ -55,7 +55,7 @@ export default function Login() {
 
   return (
     <div className="bg-background">
-      <div className=" h-screen w-screen flex justify-center items-center">
+      <div className="h-screen w-screen flex justify-center items-center">
         <div className="w-full mx-2 md:w-1/3 md:mx-0 bg-muted p-6 rounded-lg">
           <div className="flex justify-center">
             <Image src="/images/logo.svg" width={50} height={50} alt="Logo" />
@@ -64,9 +64,7 @@ export default function Login() {
             <div className="bg-green-300 p-5 rounded-lg font-bold my-4 text-black">
               <strong>Success!</strong> {params.get("message")}
             </div>
-          ) : (
-            <></>
-          )}
+          ) : null}
           <form onSubmit={login}>
             <div className="mt-5">
               <div className="flex justify-between items-center">
@@ -86,7 +84,6 @@ export default function Login() {
                     setAuthState({ ...authState, email: event.target.value })
                   }
                 />
-                <span className="text-red-400 font-bold">{errors?.email}</span>
               </div>
               <div className="mt-5">
                 <Label htmlFor="password">Password</Label>
@@ -98,9 +95,6 @@ export default function Login() {
                     setAuthState({ ...authState, password: event.target.value })
                   }
                 />
-                <span className="text-red-400 font-bold">
-                  {errors?.password}
-                </span>
               </div>
               <div className="mt-5">
                 <Button className="w-full" disabled={loading}>
@@ -108,7 +102,7 @@ export default function Login() {
                 </Button>
               </div>
               <div className="mt-5">
-                <span>Dont Have an account ? </span>
+                <span>Dont Have an account? </span>
                 <Link href="/register" className="text-orange-300 font-bold">
                   Register
                 </Link>
@@ -118,5 +112,13 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginWrapper() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Login />
+    </Suspense>
   );
 }
