@@ -38,7 +38,9 @@ export default async function ShowUser({ params }: { params: { id: number } }) {
             <TabsContent value="post">
               <div className="mt-5">
                 {user?.Post &&
-                  user.Post.map((item) => <PostCard post={item} />)}
+                  user.Post.map((item) => (
+                    <PostCard key={item.id} post={item} />
+                  ))}
 
                 {user?.Post && user.Post.length < 1 && (
                   <h1 className="text-center mt-5">No Post Found</h1>
@@ -48,7 +50,9 @@ export default async function ShowUser({ params }: { params: { id: number } }) {
             <TabsContent value="comment">
               <div className="mt-5">
                 {user?.Comment &&
-                  user.Comment.map((item) => <CommentCard comment={item} />)}
+                  user.Comment.map((item) => (
+                    <CommentCard key={item.id} comment={item} />
+                  ))}
 
                 {user?.Comment && user.Comment.length < 1 && (
                   <h1 className="text-center mt-5">No Comment found</h1>

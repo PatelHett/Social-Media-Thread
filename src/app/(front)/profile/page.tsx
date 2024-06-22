@@ -46,7 +46,7 @@ export default async function Profile() {
           <TabsContent value="post">
             <div className="mt-5">
               {posts &&
-                posts.map((item) => <PostCard post={item} isAuthPost={true} />)}
+                posts.map((item) => <PostCard key={item.id} post={item} isAuthPost={true} />)}
               {posts && posts.length < 1 && (
                 <h1 className="text-center mt-5">No Post found</h1>
               )}
@@ -56,7 +56,7 @@ export default async function Profile() {
             <div className="mt-5">
               {comments &&
                 comments.map((item) => (
-                  <CommentCard comment={item} isAuthCard={true} />
+                  <CommentCard key={item.id} comment={item} isAuthCard={true} />
                 ))}
 
               {comments && comments.length < 1 && (

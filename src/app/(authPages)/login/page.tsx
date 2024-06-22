@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { useSearchParams } from "next/navigation";
 import axios from "axios";
 import { signIn } from "next-auth/react";
-import ThemeToggleBtn from "@/components/common/ThemeToggleBtn";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
@@ -27,7 +26,7 @@ export default function Login() {
     if (status == "authenticated") {
       router.push("/");
     }
-  }, [status]);
+  }, [router, status]);
 
   const login = (event: React.FormEvent) => {
     event.preventDefault();
@@ -109,7 +108,7 @@ export default function Login() {
                 </Button>
               </div>
               <div className="mt-5">
-                <span>Don't Have an account ? </span>
+                <span>Dont Have an account ? </span>
                 <Link href="/register" className="text-orange-300 font-bold">
                   Register
                 </Link>
